@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>바이브 코딩 | 아이디어를 리듬 있게 구현하다</title>
+  <meta name="description" content="바이브 코딩: 흐름을 유지하며 빠르게 만들고, 더 자주 실험하고, 더 빨리 배우는 개발 방식." />
+
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.08);
+      --border:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.52);
+      --accent:#7c5cff;
+      --accent2:#25d6ff;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius:18px;
+      --max:1120px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 600px at 20% 15%, rgba(124,92,255,.25), transparent 60%),
+        radial-gradient(800px 500px at 85% 20%, rgba(37,214,255,.18), transparent 55%),
+        radial-gradient(900px 650px at 55% 95%, rgba(124,92,255,.12), transparent 60%),
+        linear-gradient(180deg, #070a10, #0b0f17 40%, #070a10);
+      overflow-x:hidden;
+    }
+
+    a{color:inherit; text-decoration:none}
+    button{font:inherit}
+
+    /* subtle noise overlay */
+    .noise::before{
+      content:"";
+      position:fixed; inset:0;
+      pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
+      mix-blend-mode:overlay;
+      opacity:.25;
+    }
+
+    .container{max-width:var(--max); margin:0 auto; padding:0 20px}
+
+    /* Header */
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(14px);
+      background: rgba(11,15,23,.55);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .nav{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0;
+      gap:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.2px;
+    }
+    .logo{
+      width:34px; height:34px; border-radius:12px;
+      background: conic-gradient(from 210deg, var(--accent), var(--accent2), var(--accent));
+      box-shadow: 0 10px 25px rgba(124,92,255,.25);
+      position:relative;
+    }
+    .logo::after{
+      content:"";
+      position:absolute; inset:9px;
+      border-radius:10px;
+      background: rgba(11,15,23,.9);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .navlinks{
+      display:flex; gap:16px; align-items:center;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .navlinks a{
+      padding:10px 10px;
+      border-radius:12px;
+      transition: all .18s ease;
+    }
+    .navlinks a:hover{
+      color:var(--text);
+      background: rgba(255,255,255,.06);
+    }
+    .nav-cta{
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.085);
+      border-color: rgba(255,255,255,.22);
+    }
+    .btn.primary{
+      border-color: rgba(124,92,255,.55);
+      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(37,214,255,.7));
+      box-shadow: 0 18px 35px rgba(124,92,255,.18);
+    }
+    .btn.primary:hover{filter:saturate(1.07)}
+
+    .hamburger{
+      display:none;
+      width:44px; height:44px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      cursor:pointer;
+      align-items:center; justify-content:center;
+    }
+    .hamburger span{
+      display:block; width:18px; height:2px;
+      background: rgba(255,255,255,.82);
+      position:relative;
+    }
+    .hamburger span::before,.hamburger span::after{
+      content:""; position:absolute; left:0; width:18px; height:2px;
+      background: rgba(255,255,255,.82);
+      transition: transform .2s ease, top .2s ease, opacity .2s ease;
+    }
+    .hamburger span::before{top:-6px}
+    .hamburger span::after{top:6px}
+
+    /* Mobile menu */
+    .mobile-menu{
+      display:none;
+      padding: 0 0 14px 0;
+    }
+    .mobile-menu a{
+      display:block;
+      padding:12px 12px;
+      border-radius:14px;
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      margin-top:10px;
+    }
+    .mobile-menu a:hover{color:var(--text); background: rgba(255,255,255,.07)}
+    .mobile-menu .row{
+      display:flex; gap:10px; margin-top:12px;
+    }
+    .mobile-menu .row .btn{width:100%}
+
+    /* Hero */
+    .hero{
+      padding: 70px 0 40px;
+      position:relative;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:26px;
+      align-items:stretch;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size:13px;
+      margin-bottom:14px;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 4px rgba(124,92,255,.14);
+    }
+    h1{
+      margin:0;
+      font-size: clamp(34px, 4.4vw, 56px);
+      line-height:1.08;
+      letter-spacing: -1px;
+    }
+    .grad{
+      background: linear-gradient(135deg, rgba(124,92,255,1), rgba(37,214,255,1));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .lead{
+      margin:14px 0 24px;
+      color:var(--muted);
+      font-size: clamp(16px, 1.6vw, 18px);
+      line-height:1.7;
+      max-width: 52ch;
+    }
+    .hero-actions{
+      display:flex; gap:12px; flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .mini{
+      color:var(--muted2);
+      font-size:13px;
+      display:flex; gap:14px; flex-wrap:wrap;
+      align-items:center;
+    }
+    .mini span{display:inline-flex; align-items:center; gap:8px}
+    .check{
+      width:18px; height:18px; border-radius:7px;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.05);
+      display:inline-flex; align-items:center; justify-content:center;
+    }
+    .check svg{width:12px; height:12px; opacity:.9}
+
+    /* Hero card */
+    .card{
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card.pad{padding:18px}
+    .codebox{
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(6,8,12,.55);
+      padding: 14px 14px 12px;
+      position:relative;
+    }
+    .code-top{
+      display:flex; align-items:center; justify-content:space-between;
+      color: rgba(255,255,255,.55);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    .pills{display:flex; gap:6px}
+    .pill{
+      width:10px; height:10px; border-radius:99px;
+      background: rgba(255,255,255,.16);
+    }
+    pre{
+      margin:0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.86);
+      line-height:1.6;
+    }
+    .cursor{
+      display:inline-block;
+      width:10px;
+      margin-left:1px;
+      background: rgba(255,255,255,.8);
+      height: 1.2em;
+      vertical-align:-3px;
+      animation: blink 1s steps(2) infinite;
+    }
+    @keyframes blink { 50%{opacity:0} }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+    .stat{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .stat b{display:block; font-size:16px}
+    .stat small{color:var(--muted2)}
+
+    /* Sections */
+    section{padding: 56px 0}
+    .section-head{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap:20px; margin-bottom:18px;
+    }
+    h2{
+      margin:0;
+      font-size: clamp(22px, 2.6vw, 30px);
+      letter-spacing:-.6px;
+    }
+    .sub{
+      color:var(--muted);
+      line-height:1.7;
+      max-width:60ch;
+      margin: 8px 0 0;
+    }
+
+    /* Feature grid */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+    .feature{
+      grid-column: span 4;
+      padding:18px;
+    }
+    .icon{
+      width:42px; height:42px;
+      border-radius:16px;
+      background: linear-gradient(135deg, rgba(124,92,255,.25), rgba(37,214,255,.18));
+      border:1px solid rgba(255,255,255,.14);
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:12px;
+    }
+    .feature h3{
+      margin:0 0 8px;
+      font-size:16px;
+      letter-spacing:-.2px;
+    }
+    .feature p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    /* Steps */
+    .steps{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+    }
+    .step{
+      padding:18px;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+    .num{
+      width:36px; height:36px;
+      border-radius:14px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700;
+      color: rgba(255,255,255,.86);
+      flex:0 0 auto;
+    }
+    .step h4{margin:0 0 6px; font-size:15px}
+    .step p{margin:0; color:var(--muted); line-height:1.7; font-size:14px}
+
+    /* Pricing */
+    .pricing{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:14px;
+    }
+    .plan{
+      padding:18px;
+      position:relative;
+    }
+    .tag{
+      position:absolute; top:14px; right:14px;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(124,92,255,.18);
+      border:1px solid rgba(124,92,255,.35);
+      color: rgba(255,255,255,.88);
+    }
+    .price{
+      margin: 12px 0 8px;
+      font-size: 26px;
+      letter-spacing:-.8px;
+    }
+    .plan p{margin:0 0 12px; color:var(--muted); line-height:1.7; font-size:14px}
+    .list{
+      display:grid; gap:8px; margin:0 0 14px; padding:0; list-style:none;
+      color: rgba(255,255,255,.82);
+      font-size:14px;
+    }
+    .list li{display:flex; gap:10px; align-items:flex-start}
+    .list li svg{margin-top:2px; flex:0 0 auto; opacity:.9}
+
+    /* CTA */
+    .cta{
+      padding: 22px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px;
+    }
+    .cta p{margin:6px 0 0; color:var(--muted); line-height:1.7}
+    .cta .btn{padding:12px 16px}
+
+    /* Footer */
+    footer{
+      padding: 30px 0 46px;
+      color: var(--muted2);
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .foot{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px; flex-wrap:wrap;
+    }
+
+    /* Reveal animation */
+    .reveal{
+      opacity:0;
+      transform: translateY(14px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.in{
+      opacity:1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce){
+      html{scroll-behavior:auto}
+      .reveal{opacity:1; transform:none; transition:none}
+      .cursor{animation:none}
+      *{scroll-behavior:auto !important}
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .hero-grid{grid-template-columns: 1fr; }
+      .stats{grid-template-columns: repeat(3, 1fr)}
+      .feature{grid-column: span 6}
+      .pricing{grid-template-columns: 1fr}
+      .steps{grid-template-columns: 1fr}
+      .section-head{flex-direction:column; align-items:flex-start}
+    }
+    @media (max-width: 720px){
+      .navlinks{display:none}
+      .hamburger{display:flex}
+      .mobile-menu.show{display:block}
+      .stats{grid-template-columns: 1fr}
+      .feature{grid-column: span 12}
+      .hero{padding-top: 52px}
+    }
+  </style>
+</head>
+
+<body class="noise">
+  <header>
+    <div class="container">
+      <div class="nav">
+        <a class="brand" href="#top" data-scroll>
+          <span class="logo" aria-hidden="true"></span>
+          <span>Vibe Coding</span>
+        </a>
+
+        <nav class="navlinks" aria-label="주요 섹션">
+          <a href="#about" data-scroll>소개</a>
+          <a href="#features" data-scroll>특징</a>
+          <a href="#how" data-scroll>방법</a>
+          <a href="#pricing" data-scroll>플랜</a>
+        </nav>
+
+        <div class="nav-cta">
+          <button class="btn" id="copyLinkBtn" title="현재 링크 복사">링크 복사</button>
+          <a class="btn primary" href="#pricing" data-scroll>시작하기</a>
+          <button class="hamburger" id="hamburger" aria-label="메뉴 열기" aria-expanded="false">
+            <span></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="mobile-menu" id="mobileMenu" aria-label="모바일 메뉴">
+        <a href="#about" data-scroll>소개</a>
+        <a href="#features" data-scroll>특징</a>
+        <a href="#how" data-scroll>방법</a>
+        <a href="#pricing" data-scroll>플랜</a>
+        <div class="row">
+          <button class="btn" id="copyLinkBtn2">링크 복사</button>
+          <a class="btn primary" href="#pricing" data-scroll>시작하기</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="reveal">
+            <div class="badge">
+              <span class="dot" aria-hidden="true"></span>
+              <span>아이디어를 “리듬” 있게, 구현은 더 가볍게</span>
+            </div>
+            <h1>
+              <span class="grad">바이브 코딩</span>은<br/>
+              흐름을 끊지 않는 개발 방식
+            </h1>
+            <p class="lead">
+              계획은 과감하게, 검증은 빠르게. 작은 단위로 만들고, 바로 실행해보고,
+              피드백을 흡수하며 다음 비트를 찍습니다.
+            </p>
+            <div class="hero-actions">
+              <a class="btn primary" href="#how" data-scroll>
+                60초 가이드 보기
+                <span aria-hidden="true">→</span>
+              </a>
+              <a class="btn" href="#features" data-scroll>
+                어떤 점이 다른가요?
+              </a>
+            </div>
+            <div class="mini">
+              <span><span class="check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+              </span>작게 만들고</span>
+              <span><span class="check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+              </span>빠르게 검증하고</span>
+              <span><span class="check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+              </span>리듬 유지</span>
+            </div>
+          </div>
+
+          <div class="card pad reveal" style="align-self:stretch">
+            <div class="codebox" aria-label="바이브 코딩 예시 코드">
+              <div class="code-top">
+                <div class="pills" aria-hidden="true">
+                  <span class="pill"></span><span class="pill"></span><span class="pill"></span>
+                </div>
+                <span>vibe.js</span>
+              </div>
+              <pre id="typeTarget"></pre>
+            </div>
+
+            <div class="stats" aria-label="핵심 지표">
+              <div class="stat">
+                <b>+속도</b>
+                <small>작은 단위로 빨리</small>
+              </div>
+              <div class="stat">
+                <b>+명확</b>
+                <small>피드백이 방향을</small>
+              </div>
+              <div class="stat">
+                <b>+몰입</b>
+                <small>흐름을 유지</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <h2>바이브 코딩이 뭐예요?</h2>
+            <p class="sub">
+              한 문장으로: “완벽한 설계도”보다 “살아있는 프로토타입”을 먼저 만드는 습관입니다.
+              리듬을 타듯 짧은 사이클로 만들고, 확인하고, 다듬습니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card feature reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12h6l3-9 3 18 3-9h3"></path>
+              </svg>
+            </div>
+            <h3>흐름 우선</h3>
+            <p>멈추지 않는 작업 리듬. ‘지금 만들 수 있는 최소’로 먼저 달립니다.</p>
+          </div>
+
+          <div class="card feature reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+              </svg>
+            </div>
+            <h3>작게 실험</h3>
+            <p>기능을 얇게 쪼개고 바로 테스트. 실패도 비용이 아니라 데이터가 됩니다.</p>
+          </div>
+
+          <div class="card feature reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <path d="M7 10l5 5 5-5"></path>
+                <path d="M12 15V3"></path>
+              </svg>
+            </div>
+            <h3>피드백 루프</h3>
+            <p>사용자 반응, 로그, 리뷰를 빠르게 반영해서 다음 버전을 만듭니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <h2>현대적인 팀이 좋아하는 이유</h2>
+            <p class="sub">바이브 코딩은 “속도”만이 아니라 “방향”을 지키는 방식이에요.</p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card feature reveal" style="grid-column: span 6;">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 6v6l4 2"></path>
+              </svg>
+            </div>
+            <h3>의사결정이 빨라져요</h3>
+            <p>“될 것 같음”을 토론하는 대신, “되는지”를 확인합니다. 프로토타입이 회의 시간을 줄여줘요.</p>
+          </div>
+
+          <div class="card feature reveal" style="grid-column: span 6;">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 7h-9"></path><path d="M14 17H5"></path>
+                <circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle>
+              </svg>
+            </div>
+            <h3>리스크가 작아져요</h3>
+            <p>큰 기능을 한 번에 배포하지 않아요. 작은 변경을 자주 릴리즈해 사고를 예방합니다.</p>
+          </div>
+
+          <div class="card feature reveal" style="grid-column: span 4;">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19V5"></path><path d="M4 5h16"></path><path d="M20 5v14"></path>
+                <path d="M8 9h8"></path><path d="M8 13h6"></path><path d="M8 17h10"></path>
+              </svg>
+            </div>
+            <h3>문서가 가벼워요</h3>
+            <p>긴 문서 대신 짧은 가설과 체크리스트로 움직입니다.</p>
+          </div>
+
+          <div class="card feature reveal" style="grid-column: span 4;">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v6"></path><path d="M12 16v6"></path>
+                <path d="M4.93 4.93l4.24 4.24"></path><path d="M14.83 14.83l4.24 4.24"></path>
+                <path d="M2 12h6"></path><path d="M16 12h6"></path>
+                <path d="M4.93 19.07l4.24-4.24"></path><path d="M14.83 9.17l4.24-4.24"></path>
+              </svg>
+            </div>
+            <h3>탐색이 쉬워요</h3>
+            <p>사용자가 원하는 답을 ‘찾아가는’ 흐름을 만들어줍니다.</p>
+          </div>
+
+          <div class="card feature reveal" style="grid-column: span 4;">
+            <div class="icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10a8 8 0 1 0-3 6.2"></path>
+                <path d="M21 10V5"></path><path d="M21 10h-5"></path>
+              </svg>
+            </div>
+            <h3>학습이 빨라요</h3>
+            <p>‘작은 실패’가 쌓이면, 큰 성공이 옵니다. 통제된 실험이 실력을 키워요.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW -->
+    <section id="how">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <h2>실행 방법: 4비트 루프</h2>
+            <p class="sub">바이브 코딩은 춤 동작처럼 반복하면 몸에 붙습니다.</p>
+          </div>
+        </div>
+
+        <div class="steps">
+          <div class="card step reveal">
+            <div class="num">1</div>
+            <div>
+              <h4>가설을 한 줄로</h4>
+              <p>“사용자는 X를 원한다”를 한 줄로 적고, 확인할 지표(클릭/가입/저장)를 정합니다.</p>
+            </div>
+          </div>
+
+          <div class="card step reveal">
+            <div class="num">2</div>
+            <div>
+              <h4>MVP를 아주 얇게</h4>
+              <p>정말 필요한 최소 화면/최소 플로우만 만듭니다. 보기 좋음보다 “작동”이 먼저.</p>
+            </div>
+          </div>
+
+          <div class="card step reveal">
+            <div class="num">3</div>
+            <div>
+              <h4>바로 테스트</h4>
+              <p>실사용자 3명만 봐도 힌트가 나옵니다. 로그, 설문, 관찰 중 하나만이라도.</p>
+            </div>
+          </div>
+
+          <div class="card step reveal">
+            <div class="num">4</div>
+            <div>
+              <h4>다음 비트로 개선</h4>
+              <p>좋았던 점은 강화하고, 막혔던 지점은 제거합니다. 그리고 다시 1로 돌아가요.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card cta reveal" style="margin-top:14px;">
+          <div>
+            <h3 style="margin:0; font-size:16px; letter-spacing:-.2px">지금 바로 ‘작은 루프’부터 시작할까요?</h3>
+            <p>팀이든 개인이든, 오늘은 20분짜리 MVP로도 충분합니다.</p>
+          </div>
+          <a class="btn primary" href="#pricing" data-scroll>플랜 보기 →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <h2>플랜</h2>
+            <p class="sub">실제로 판매 목적이라면 가격/문구를 바꾸면 됩니다. 지금은 샘플 구성이에요.</p>
+          </div>
+        </div>
+
+        <div class="pricing">
+          <div class="card plan reveal">
+            <h3 style="margin:0; font-size:16px;">Starter</h3>
+            <div class="price">무료</div>
+            <p>개인 실험용. 루프를 몸에 붙이는 단계.</p>
+            <ul class="list">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                4비트 체크리스트
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                간단 KPI 템플릿
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                1주 루틴 가이드
+              </li>
+            </ul>
+            <button class="btn" data-toast="Starter 플랜은 샘플이에요 🙂">선택</button>
+          </div>
+
+          <div class="card plan reveal" style="border-color: rgba(124,92,255,.35);">
+            <span class="tag">추천</span>
+            <h3 style="margin:0; font-size:16px;">Pro</h3>
+            <div class="price">₩19,000<span style="font-size:14px; color:var(--muted2)"> /월</span></div>
+            <p>작은 실험을 꾸준히, 그리고 팀으로.</p>
+            <ul class="list">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                실험 설계 템플릿 12종
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                회고 프롬프트 세트
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                주간 리듬 플래너
+              </li>
+            </ul>
+            <button class="btn primary" data-toast="Pro 구매는 데모 버튼입니다 😄">시작하기</button>
+          </div>
+
+          <div class="card plan reveal">
+            <h3 style="margin:0; font-size:16px;">Team</h3>
+            <div class="price">₩79,000<span style="font-size:14px; color:var(--muted2)"> /월</span></div>
+            <p>팀 전체가 같은 박자로 움직이게.</p>
+            <ul class="list">
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                팀 실험 대시보드
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                리뷰 프로세스 가이드
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+                온보딩 문구 템플릿
+              </li>
+            </ul>
+            <button class="btn" data-toast="Team 문의 버튼도 데모입니다 ✉️">문의하기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="container">
+        <div class="foot">
+          <div class="brand" style="opacity:.9">
+            <span class="logo" aria-hidden="true"></span>
+            <span>Vibe Coding</span>
+          </div>
+          <div>© <span id="year"></span> Vibe Coding. All vibes reserved.</div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" style="
+    position:fixed; left:50%; bottom:18px; transform:translateX(-50%) translateY(20px);
+    background: rgba(20,24,35,.78);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter: blur(12px);
+    color: rgba(255,255,255,.9);
+    padding: 12px 14px;
+    border-radius: 14px;
+    box-shadow: 0 18px 45px rgba(0,0,0,.35);
+    opacity:0;
+    transition: opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+    max-width:min(520px, calc(100vw - 24px));
+    font-size:14px;
+    line-height:1.5;
+  "></div>
+
+  <script>
+    // 1) Smooth scroll (JS 기반: 헤더 높이 고려)
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function getHeaderOffset(){
+      const header = document.querySelector("header");
+      return header ? header.getBoundingClientRect().height + 10 : 0;
+    }
+
+    function smoothScrollTo(target){
+      const el = document.querySelector(target);
+      if(!el) return;
+
+      const y = window.scrollY + el.getBoundingClientRect().top - getHeaderOffset();
+      window.scrollTo({
+        top: y,
+        behavior: prefersReducedMotion ? "auto" : "smooth"
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("[data-scroll]");
+      if(!a) return;
+      const href = a.getAttribute("href");
+      if(!href || !href.startsWith("#")) return;
+      e.preventDefault();
+      // 모바일 메뉴 닫기
+      closeMobileMenu();
+      smoothScrollTo(href);
+      history.replaceState(null, "", href);
+    });
+
+    // 2) Reveal on scroll (IntersectionObserver)
+    const revealEls = Array.from(document.querySelectorAll(".reveal"));
+    if(!prefersReducedMotion && "IntersectionObserver" in window){
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(ent => {
+          if(ent.isIntersecting){
+            ent.target.classList.add("in");
+            io.unobserve(ent.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      revealEls.forEach(el => io.observe(el));
+    } else {
+      revealEls.forEach(el => el.classList.add("in"));
+    }
+
+    // 3) Typewriter (히어로 코드)
+    const code = `// vibe coding: 작게 만들고, 빠르게 검증하기
+const loop = ["가설", "MVP", "테스트", "개선"];
+
+function vibe() {
+  for (const beat of loop) {
+    ship(beat);        // 배포 가능한 최소
+    learn(beat);       // 피드백 흡수
+    keepFlow(beat);    // 리듬 유지
+  }
+}
+
+vibe();`;
+
+    const target = document.getElementById("typeTarget");
+    let i = 0;
+    function type(){
+      if(!target) return;
+      target.innerHTML = escapeHtml(code.slice(0, i)) + '<span class="cursor" aria-hidden="true"></span>';
+      i++;
+      if(i <= code.length){
+        setTimeout(type, 14);
+      } else {
+        target.innerHTML = escapeHtml(code);
+      }
+    }
+    function escapeHtml(str){
+      return str
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+    if(prefersReducedMotion){
+      target.textContent = code;
+    } else {
+      type();
+    }
+
+    // 4) Mobile menu toggle
+    const hamburger = document.getElementById("hamburger");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    function openMobileMenu(){
+      if(!mobileMenu || !hamburger) return;
+      mobileMenu.classList.add("show");
+      hamburger.setAttribute("aria-expanded", "true");
+    }
+    function closeMobileMenu(){
+      if(!mobileMenu || !hamburger) return;
+      mobileMenu.classList.remove("show");
+      hamburger.setAttribute("aria-expanded", "false");
+    }
+
+    hamburger?.addEventListener("click", () => {
+      const isOpen = mobileMenu.classList.contains("show");
+      isOpen ? closeMobileMenu() : openMobileMenu();
+    });
+
+    // 5) Toast helper
+    const toast = document.getElementById("toast");
+    let toastTimer = null;
+
+    function showToast(msg){
+      if(!toast) return;
+      toast.textContent = msg;
+      toast.style.opacity = "1";
+      toast.style.transform = "translateX(-50%) translateY(0)";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(-50%) translateY(20px)";
+      }, 2200);
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-toast]");
+      if(!btn) return;
+      showToast(btn.getAttribute("data-toast"));
+    });
+
+    // 6) Copy link
+    async function copyLink(){
+      try{
+        await navigator.clipboard.writeText(location.href);
+        showToast("링크를 복사했어요. 원하는 곳에 붙여넣기만 하면 끝!");
+      }catch(err){
+        showToast("복사에 실패했어요. 주소창에서 직접 복사해 주세요.");
+      }
+    }
+    document.getElementById("copyLinkBtn")?.addEventListener("click", copyLink);
+    document.getElementById("copyLinkBtn2")?.addEventListener("click", copyLink);
+
+    // 7) Year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // 8) Close mobile menu on resize
+    window.addEventListener("resize", () => {
+      if(window.innerWidth > 720) closeMobileMenu();
+    });
+  </script>
+</body>
+</html>
